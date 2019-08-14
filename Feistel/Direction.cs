@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Feistel
 {
-    enum Direction
+    public enum Direction
     {
         Right,
         Left

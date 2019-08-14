@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Feistel
 {
-    class FeistelCipher
+    public class FeistelCipher
     {
         byte[] _key;
         int _blockSize;
@@ -13,7 +13,8 @@ namespace Feistel
         CipherMode _cipherMode;
         byte[] _IVcbc;
         byte[] _IVcfb;
-        public IEnumerable<byte[]> _keys
+
+        IEnumerable<byte[]> _keys
         {
             get
             {
@@ -24,13 +25,8 @@ namespace Feistel
                 }
             }
         }
-        public IEnumerable<byte[]> _keysReverse
-        {
-            get
-            {
-                return _keys.Reverse();
-            }
-        }
+
+        IEnumerable<byte[]> _keysReverse => _keys.Reverse();
 
         public FeistelCipher (int keySize, FeistelType feistelType, CipherMode cipherMode)
         {
@@ -47,6 +43,7 @@ namespace Feistel
                 _IVcfb = GenerateIV(_blockSize);
             }
         }
+
         public FeistelCipher(byte[] key, FeistelType feistelType, CipherMode cipherMode):this(key.Length, feistelType, cipherMode)
         {
             if(key.Length % 2 != 0)
@@ -107,7 +104,8 @@ namespace Feistel
             }
             return result.Trim('\0');
         }
-        byte[] CryptBlock(byte[] blockBytes, IEnumerable<byte[]> roundKeys, CryptType cryptType)
+
+        private byte[] CryptBlock(byte[] blockBytes, IEnumerable<byte[]> roundKeys, CryptType cryptType)
         {
             foreach (var key in roundKeys)
             {
@@ -118,7 +116,8 @@ namespace Feistel
             }
             return blockBytes;
         }
-        byte[] CryptBlockCBC(byte[] blockBytes, ref byte[] iv, ref byte[] ivNew, IEnumerable<byte[]> roundKeys, CryptType cryptType)
+
+        private byte[] CryptBlockCBC(byte[] blockBytes, ref byte[] iv, ref byte[] ivNew, IEnumerable<byte[]> roundKeys, CryptType cryptType)
         {
             if (cryptType == CryptType.Encrypt)
                 blockBytes = XOR(blockBytes, iv);
@@ -140,7 +139,8 @@ namespace Feistel
             }
             return blockBytes;
         }
-        byte[] CryptBlockCFB(byte[] blockBytes, ref byte[] iv, IEnumerable<byte[]> roundKeys, CryptType cryptType)
+
+        private byte[] CryptBlockCFB(byte[] blockBytes, ref byte[] iv, IEnumerable<byte[]> roundKeys, CryptType cryptType)
         {
             var tempCipher = new byte[blockBytes.Length];
             Array.Copy(blockBytes, tempCipher, blockBytes.Length);
@@ -155,15 +155,16 @@ namespace Feistel
             Array.Copy((cryptType == CryptType.Encrypt) ? result : tempCipher, iv, result.Length);
             return result;
         }
-        byte[] PerformEncryptionClassic(byte[] blockBytes, byte[] roundKey, bool lastRound)
+
+        private byte[] PerformEncryptionClassic(byte[] blockBytes, byte[] roundKey, bool lastRound)
         {
-            byte[] leftBlock = new byte[blockBytes.Length / 2];
-            byte[] rightBlock = new byte[blockBytes.Length / 2];
+            var leftBlock = new byte[blockBytes.Length / 2];
+            var rightBlock = new byte[blockBytes.Length / 2];
 
             Array.Copy(blockBytes, leftBlock, leftBlock.Length);
             Array.Copy(blockBytes, leftBlock.Length, rightBlock, 0, rightBlock.Length);
 
-            byte[] rightBlockNew = ApplyRoundFunction(leftBlock, roundKey);
+            var rightBlockNew = ApplyRoundFunction(leftBlock, roundKey);
 
             for (uint rightBlockNo = 0; rightBlockNo < leftBlock.Length; ++rightBlockNo)
             {
@@ -184,12 +185,13 @@ namespace Feistel
             }
             return resultBlockBytes;
         }
-        byte[] PerformEncryptionVariant1(byte[] block, byte[] roundKey, CryptType cryptType)
+
+        private byte[] PerformEncryptionVariant1(byte[] block, byte[] roundKey, CryptType cryptType)
         {
-            byte[] q1 = new byte[block.Length / 4];
-            byte[] q2 = new byte[block.Length / 4];
-            byte[] q3 = new byte[block.Length / 4];
-            byte[] q4 = new byte[block.Length / 4];
+            var q1 = new byte[block.Length / 4];
+            var q2 = new byte[block.Length / 4];
+            var q3 = new byte[block.Length / 4];
+            var q4 = new byte[block.Length / 4];
 
             Array.Copy(block, q1, q1.Length);
             Array.Copy(block, q1.Length, q2, 0, q2.Length);
@@ -208,7 +210,7 @@ namespace Feistel
                 q2new = XOR(q2new, q1);
             }
 
-            byte[] result = new byte[block.Length];
+            var result = new byte[block.Length];
 
             if (cryptType == CryptType.Encrypt)
             {
@@ -226,12 +228,13 @@ namespace Feistel
             }
             return result;
         }
-        byte[] ApplyRoundFunction(byte[] blockBytes, byte[] roundKey)
+
+        private byte[] ApplyRoundFunction(byte[] blockBytes, byte[] roundKey)
         {
             return XOR(CycleShift(blockBytes, 9, Direction.Left), Inverse(MultiplicationMod2(CycleShift(roundKey, 11, Direction.Right), blockBytes)));
         }
 
-        byte[] MultiplicationMod2(byte[] array1, byte[] array2)
+        private byte[] MultiplicationMod2(byte[] array1, byte[] array2)
         {
             var result = new byte[array1.Length];
             for(uint i = 0; i < result.Length; i++)
@@ -240,7 +243,8 @@ namespace Feistel
             }
             return result;
         }
-        byte[] XOR(byte[] array1, byte[] array2)
+
+        private byte[] XOR(byte[] array1, byte[] array2)
         {
             var result = new byte[array1.Length];
             for(uint i = 0; i < result.Length; i++)
@@ -249,7 +253,8 @@ namespace Feistel
             }
             return result;
         }
-        byte[] Inverse(byte[] array)
+
+        private byte[] Inverse(byte[] array)
         {
             var result = new byte[array.Length];
             for(uint i = 0; i < result.Length; i++)
@@ -258,7 +263,8 @@ namespace Feistel
             }
             return result;
         }
-        byte[] Shift(byte[] array, byte count, Direction direction)
+
+        private byte[] Shift(byte[] array, byte count, Direction direction)
         {
             var result = new byte[array.Length];
             Array.Copy(array, result, array.Length);
@@ -269,13 +275,14 @@ namespace Feistel
             }
             return result;
         }
-        byte[] PerformShift(byte[] array, Direction direction)
+
+        private byte[] PerformShift(byte[] array, Direction direction)
         {
             var result = new byte[array.Length];
             Array.Copy(array, result, array.Length);
             if(direction == Direction.Left)
             {
-                bool tempByte = false;
+                var tempByte = false;
                 bool newTempByte;
                 for(int i = result.Length - 1; i >= 0; i--)
                 {
@@ -287,7 +294,7 @@ namespace Feistel
             }
             else
             {
-                bool tempByte = false;
+                var tempByte = false;
                 bool newTempByte;
                 for(int i = 0; i < result.Length; i++)
                 {
@@ -299,7 +306,8 @@ namespace Feistel
             }
             return result;
         }
-        byte[] CycleShift(byte[] array, byte count, Direction direction)
+
+        private byte[] CycleShift(byte[] array, byte count, Direction direction)
         {
             count %= (byte)(array.Length * 8);
             var result = new byte[array.Length];
@@ -312,7 +320,8 @@ namespace Feistel
             result = PerformCycleShift(result, count, direction);
             return result;
         }
-        byte[] PerformCycleShift(byte[] array, byte count, Direction direction)
+
+        private byte[] PerformCycleShift(byte[] array, byte count, Direction direction)
         {
                 bool[] tempBits;
                 bool[] newTempBits;
@@ -340,7 +349,8 @@ namespace Feistel
                 }
                 return array;
         }
-        void PutBits(ref byte currentByte, bool[] savedBits, Direction direction)
+
+        private void PutBits(ref byte currentByte, bool[] savedBits, Direction direction)
         {
             if (direction == Direction.Left)
             {
@@ -359,40 +369,46 @@ namespace Feistel
                 }
             }
         }
-        bool[] SaveBits(byte currentByte, byte count, Direction direction)
+
+        private bool[] SaveBits(byte currentByte, byte count, Direction direction)
         {
-            bool[] tempArray = new bool[count];
+            var tempArray = new bool[count];
             for (uint i = 0; i < count; i++)
                 tempArray[i] = GetBit(currentByte, (direction == Direction.Left) ? (7 - i) : i);
             return tempArray;
         }
-        bool GetBit(byte value, uint index)
+
+        private bool GetBit(byte value, uint index)
         {
             if (index > 8)
                 throw new Exception("index must be < 8");
             return ((value & (1 << (int)index)) != 0) ? true : false;
         }
-        void SetBit(bool bitValue, ref byte container, int index)
+
+        private void SetBit(bool bitValue, ref byte container, int index)
         {
             container = (byte)((bitValue) ?
                 container | (1 << index) :
                 container & (~(1 << index)));
         }
-        byte[] GenerateIV(int size)
+
+        private byte[] GenerateIV(int size)
         {
             var result = new byte[size];
-            Random random = new Random();
+            var random = new Random();
             random.NextBytes(result);
             return result;
         }
-        byte[] GenerateKey(int size)
+
+        private byte[] GenerateKey(int size)
         {
             var result = new byte[size];
-            Random random = new Random();
+            var random = new Random();
             random.NextBytes(result);
             return result;
         }
-        byte[] GetBits(byte[] array, uint count, Direction direction)
+
+        private byte[] GetBits(byte[] array, uint count, Direction direction)
         {
             if(count > array.Length)
             {
@@ -406,7 +422,8 @@ namespace Feistel
                     result[i] = array[array.Length-count + i];
             return result;
         }
-        byte[] ConcatBits(byte[] array1, byte[] array2)
+
+        private byte[] ConcatBits(byte[] array1, byte[] array2)
         {
             var result = new byte[array1.Length + array2.Length];
             Array.Copy(array1, result, array1.Length);

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Feistel
 {
-    enum CryptType
+    public enum CryptType
     {
         Encrypt,
         Decrypt

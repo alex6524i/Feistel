@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Feistel
 {
-    enum CipherMode
+    public enum CipherMode
     {
         None,
         CBC,

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Feistel
 {
-    enum FeistelType
+    public enum FeistelType
     {
         ClassicFeistel,
         Variant1,
